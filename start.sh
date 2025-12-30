@@ -14,6 +14,6 @@ docker run -d \
   --device=/dev/bus/usb \
   --privileged \
   -v /run/udev:/run/udev:ro \
-  -p 8000:8000 \
+  -p 0.0.0.0:8000:8000 \
   --env-file .env \
   code-signer
