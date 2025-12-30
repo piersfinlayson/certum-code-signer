@@ -33,6 +33,8 @@ RUN pip install -r requirements.txt
 
 # Copy application files
 COPY signer.py .
-COPY cert.pem /certs/cert.pem
+COPY signing_cert.pem /certs/signing_cert.pem
+COPY https_cert.pem /certs/https_cert.pem
+COPY https_key.pem /certs/https_key.pem
 
-CMD ["uvicorn", "signer:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "info"]
+CMD ["uvicorn", "signer:app", "--host", "0.0.0.0", "--port", "8443", "--log-level", "info", "--ssl-keyfile", "/certs/https_key.pem", "--ssl-certfile", "/certs/https_cert.pem"]

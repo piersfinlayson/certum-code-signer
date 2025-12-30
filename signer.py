@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
+from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks, Form
 from fastapi.responses import FileResponse
 import subprocess
 import tempfile
@@ -67,11 +67,14 @@ async def startup_event():
         sys.exit(1)
 
 @app.post("/sign")
-async def sign_executable(file: UploadFile = File(...), background_tasks: BackgroundTasks = None):
+async def sign_executable(
+    file: UploadFile = File(...),
+    pin: str = Form(...),
+    background_tasks: BackgroundTasks = None
+):
     logger.info(f"Received signing request for file: {file.filename}")
     
     key_id = os.environ["KEY_ID"]
-    pin = os.environ["PIN"]
     
     with tempfile.NamedTemporaryFile(delete=False, suffix=".exe") as tmp_in:
         content = await file.read()
@@ -86,7 +89,7 @@ async def sign_executable(file: UploadFile = File(...), background_tasks: Backgr
         result = subprocess.run([
             "osslsigncode", "sign",
             "-pkcs11module", "/opt/proCertumCardManager/sc30pkcs11-3.0.6.72-MS.so",
-            "-certs", "/certs/cert.pem",
+            "-certs", "/certs/signing_cert.pem",
             "-key", f"pkcs11:id={key_id};type=private?pin-value={pin}",
             "-h", "sha256",
             "-ts", "http://timestamp.digicert.com",
