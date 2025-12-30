@@ -1,4 +1,4 @@
-# Code Signer
+# Certum Code Signer
 
 A containerised web server for signing Windows executables using a Certum supplied code signing certificate (including an Open Source Developer certicate), stored on a smartcard.
 
@@ -46,7 +46,7 @@ Modify `start.sh` if you wish to expose the server on a different port (8000 is 
 
 ## Usage
 
-Send a POST request to `http://your-ip:8000/sign` with the file to be signed as form data.  The signed file will be returned in the response.
+Send a POST request to `http://server-ip:8000/sign` with the file to be signed as form data.  The signed file will be returned in the response.
 
 Examples follow.
 
