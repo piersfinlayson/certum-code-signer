@@ -76,8 +76,28 @@ else:
 $FilePath = "path\to\your\file.exe"
 $Url = "http://server-ip:8000/sign"
 $SignedFilePath = "signed-file.exe"
+
 try {
-    Invoke-RestMethod -Uri $Url -Method Post -InFile $FilePath -OutFile $SignedFilePath
+    # Resolve to absolute path
+    $FilePath = Resolve-Path $FilePath
+    
+    # Create multipart form data
+    $FileContent = [System.IO.File]::ReadAllBytes($FilePath)
+    $Boundary = [System.Guid]::NewGuid().ToString()
+    $LF = "`r`n"
+    
+    $BodyLines = @(
+        "--$Boundary",
+        "Content-Disposition: form-data; name=`"file`"; filename=`"$(Split-Path $FilePath -Leaf)`"",
+        "Content-Type: application/octet-stream$LF",
+        [System.Text.Encoding]::GetEncoding("iso-8859-1").GetString($FileContent),
+        "--$Boundary--$LF"
+    ) -join $LF
+    
+    # Upload and download signed file
+    $Response = Invoke-WebRequest -Uri $Url -Method Post -ContentType "multipart/form-data; boundary=$Boundary" -Body $BodyLines -UseBasicParsing
+    [System.IO.File]::WriteAllBytes($SignedFilePath, $Response.Content)
+    
     Write-Host "Signing successful: $SignedFilePath"
 } catch {
     Write-Host "Signing failed: $_"
